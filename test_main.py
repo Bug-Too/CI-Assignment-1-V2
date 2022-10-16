@@ -1,9 +1,9 @@
-from unittest import TestCase
+import unittest
 
 import main
 
 
-class Test(TestCase):
+class Test(unittest.TestCase):
     def test_multiply_matrix(self):
         self.assertEqual(main.multiply_matrix([[1, 1], [1, 1]], [[0.5, 1], [1, 0.5]]), [[1.5, 1.5], [1.5, 1.5]],
                          'Testcase:[[1, 1], [1, 1]], [[0.5, 1], [1, 0.5]] -> [[1.5, 1.5], [1.5, 1.5]]')
@@ -21,7 +21,7 @@ class Test(TestCase):
         print('result: ', main.create_weight([1, 1]), 'expected: [[[*]]]')
         print('result: ', main.create_weight([1, 2]), 'expected: [[[*],[*]]')
         print('result: ', main.create_weight([1, 2, 1]), 'expected: [[[*],[*]],[[*],[*]]]')
-        print(main.create_weight([1, 2, 2, 1]))
+        print(main.create_weight([2, 3, 1]))
 
     def test_loop(self):
         layers = [1, 2, 2, 1]
@@ -33,4 +33,18 @@ class Test(TestCase):
     def test_transpose(self):
         self.assertEqual(main.transpose([[1]]), [[1]])
         self.assertEqual(main.transpose([[1], [1]]), [[1, 1]])
-        
+
+    def test_type_check(self):
+        print(type(main.transpose))
+
+    def test_matrix_operation(self):
+        def foo(x): return x + 1
+
+        self.assertEqual(main.matrix_operation([[1]], foo), [[2]])
+
+    def test_create_node(self):
+        print(main.create_node([1, 2, 10]))
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
