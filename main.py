@@ -1,21 +1,28 @@
 import random
 
 
-def run(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str):
-    two_weight_change = [[]]
-    input_data = read_file(file_path)
-
+def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str):
+    # Initial value
+    formatted_data = format_data(read_file(file_path))
     weights = create_weight(layers)
-    node = forward_pass(weights, input_data, layers, bias)
-    costs = calculate_cost(node, desire_output)
-    gradient = find_grad(node, weights, costs, layers)
+    sum_square_error_average = 1
+    epoch_count = 0
+    weight_change_list = [None]
 
-    two_weight_change.append(calculate_weight_change(node, gradient, two_weight_change[-1], weights, learning_rate, momentum_rate, layers, epoch))
-    update_weight(two_weight_change[-1], weights, layers)
-    two_weight_change.pop(0)
-    epoch += 1
-
-    return 0
+    # Run Algorithm
+    while sum_square_error_average < epsilon and epoch_count < max_epoch:
+        error_list = []
+        for current_data in formatted_data:
+            node = forward_pass(weights, current_data[0], layers, bias)
+            cost = calculate_cost(node, current_data[1])
+            error_list.extend(cost)
+            gradient = find_grad(node, weights, cost, layers)
+            weight_change_list.append(calculate_weight_change(node, gradient, weight_change_list[-1], weights, learning_rate, momentum_rate,layers, epoch_count))
+            update_weight(weight_change_list[-1], weights, layers)
+            weight_change_list.pop(0)
+        sum_square_error_average = find_sse_average(error_list)
+        epoch_count += 1
+    return sum_square_error_average ** 0.5
 
 
 def read_file(file_path):
@@ -63,11 +70,11 @@ def create_node(layers: list) -> list[list[list[float]]]:
     return node
 
 
-def create_weight(layers: list) -> list:
+def create_weight(layers: list[int]) -> list[list[list[float]]]:
     """
     create lists of weight in each interval
 
-    :rtype: list
+    :rtype: list[list[list[float]]]
     :param layers: layers of this network
     :return: weight
     """
@@ -112,7 +119,7 @@ def multiply_matrix(x: list, y: list) -> list:
     return [[sum(a * b for a, b in zip(x_row, y_col)) for y_col in zip(*y)] for x_row in x]
 
 
-def forward_pass(weight: list, input_data: list, layers: list, bias: float) -> list[list[list[float]]]:
+def forward_pass(weight: list, input_data: list[float], layers: list, bias: float) -> list[list[list[float]]]:
     """
     calculate node of network by matrix multiplication and return result matrix node
 
@@ -125,7 +132,7 @@ def forward_pass(weight: list, input_data: list, layers: list, bias: float) -> l
     """
     # insert input
     node = create_node(layers)
-    node[0] = transpose(input_data)
+    node[0] = transpose([input_data])
 
     # calculate activation value
     for i in range(len(layers) - 1):
@@ -302,4 +309,4 @@ def update_weight(weight_change: list[list[list[float]]], weight: list[list[list
 
 
 if __name__ == '__main__':
-    run([8, 4, 1], 1, 0.1, 0.1, 2000, 0.005, './')
+    train([8, 4, 1], 1, 0.1, 0.1, 2000, 0.005, './')
