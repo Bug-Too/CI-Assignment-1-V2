@@ -25,9 +25,15 @@ def read_file(file_path):
 
 
 def format_data(lines: list[str]) -> list[list[list[float]]]:
+    """
+    format data to form
+    [[[...input_data],[...desire_data]],[[...input_data],[...desire_data]],...,[[...input_data],[...desire_data]]]
 
+    :rtype: list[list[list[float]]]
+    :param lines: list of string each line from file
+    :return: formatted data
+    """
     data_list: list[list[list[float]]] = []
-    cross_validate_data = []
     for line in lines:
         temp = []
         raw_data = [float(y) for y in (line.split())]
