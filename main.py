@@ -1,27 +1,44 @@
 import random
 
 
-def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str):
-    # Initial value
+def cross_validate(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str):
+    validate_error_list = []
     formatted_data = format_data(read_file(file_path))
+    for i in range(10):
+        training_data = formatted_data
+        validation_data = []
+        for j in range(int(len(formatted_data) / 10)):
+            validation_data.append(training_data.pop(i * int(len(formatted_data) / 10)))
+        validate_error_list.append(train(layers, bias, learning_rate, momentum_rate, max_epoch, epsilon, training_data, validation_data))
+
+
+def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, training_data: list[list[list[float]]], validation_data):
+    # Initial value
     weights = create_weight(layers)
     sum_square_error_average = 1
     epoch_count = 0
     weight_change_list = [None]
 
-    # Run Algorithm
+    # Run Training Algorithm
     while sum_square_error_average < epsilon and epoch_count < max_epoch:
         error_list = []
-        for current_data in formatted_data:
+        for current_data in training_data:
             node = forward_pass(weights, current_data[0], layers, bias)
             cost = calculate_cost(node, current_data[1])
             error_list.extend(cost)
             gradient = find_grad(node, weights, cost, layers)
-            weight_change_list.append(calculate_weight_change(node, gradient, weight_change_list[-1], weights, learning_rate, momentum_rate,layers, epoch_count))
+            weight_change_list.append(calculate_weight_change(node, gradient, weight_change_list[-1], weights, learning_rate, momentum_rate, layers, epoch_count))
             update_weight(weight_change_list[-1], weights, layers)
             weight_change_list.pop(0)
         sum_square_error_average = find_sse_average(error_list)
         epoch_count += 1
+
+    error_list = []
+    for current_validate in validation_data:
+        node = forward_pass(weights, current_validate[0], layers, bias)
+        cost = calculate_cost(node, current_validate[1])
+        error_list.extend(cost)
+
     return sum_square_error_average ** 0.5
 
 
@@ -273,7 +290,7 @@ def transpose(input_matrix: list[list[float]]) -> list[list[float]]:
     return [[input_matrix[j][i] for j in range(len(input_matrix))] for i in range(len(input_matrix[0]))]
 
 
-def calculate_weight_change(node: list[list[list[float]]], grad: list[list[list[float]]], last_weight_change: list[list[list[float]]], weight: list[list[list[float]]], learning_rate: float, momentum_rate: float, layers: list[float], epoch: float) -> list[list[list[float]]]:
+def calculate_weight_change(node: list[list[list[float]]], grad: list[list[list[float]]], last_weight_change: list[list[list[float]]], weight: list[list[list[float]]], learning_rate: float, momentum_rate: float, layers: list[int], epoch: float) -> list[list[list[float]]]:
     """
     calculate weight change of this network
 
@@ -299,7 +316,7 @@ def calculate_weight_change(node: list[list[list[float]]], grad: list[list[list[
     return weight_change
 
 
-def update_weight(weight_change: list[list[list[float]]], weight: list[list[list[float]]], layers: list[float]) -> list[list[list[float]]]:
+def update_weight(weight_change: list[list[list[float]]], weight: list[list[list[float]]], layers: list[int]) -> list[list[list[float]]]:
     new_weight = create_weight(layers)
     for i in range(len(weight)):
         for j in range(len(weight[i])):
@@ -309,4 +326,5 @@ def update_weight(weight_change: list[list[list[float]]], weight: list[list[list
 
 
 if __name__ == '__main__':
-    train([8, 4, 1], 1, 0.1, 0.1, 2000, 0.005, './')
+    pass
+    # train([8, 4, 1], 1, 0.1, 0.1, 2000, 0.005, './')
