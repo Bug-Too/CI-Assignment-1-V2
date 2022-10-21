@@ -1,4 +1,5 @@
 import unittest
+from unittest import TestCase
 
 import main
 
@@ -43,7 +44,13 @@ class Test(unittest.TestCase):
         self.assertEqual(main.matrix_operation([[1]], foo), [[2]])
 
     def test_create_node(self):
-        print(main.create_node([1, 2, 10]))
+        print(main.create_node([1, 2, 1]))
+
+    def test_find_grad(self):
+        self.assertEqual(main.find_grad([[[1.0]], [[1.0], [1.0]], [[1.0]]], [[[1.0], [1.0]], [[1.0], [1.0]]], [0.1], [1, 2, 1]), [[[0.0]], [[0.1], [0.1]], [[0.1]]])
+
+    def test_calculate_weight_change(self):
+        self.assertEqual(main.calculate_weight_change([[[1.0]], [[1.0], [1.0]], [[1.0]]], [[[0.0]], [[0.1], [0.1]], [[0.1]]], [[[1.0], [1.0]], [[1.0, 1.0]]], [[[1.0], [1.0]], [[1.0, 1.0]]], 0.1, 0.1, [1, 2, 1], 0),  [[[0.010000000000000002], [0.010000000000000002]], [[0.010000000000000002, 0.010000000000000002]]])
 
 
 if __name__ == '__main__':
