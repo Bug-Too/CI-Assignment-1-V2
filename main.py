@@ -1,7 +1,20 @@
 import random
 
 
-def cross_validate(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str):
+def cross_validate(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str) -> list[list[float]]:
+    """
+    cross validate data
+    
+    :rtype: list[list[float]]
+    :param layers: layers of this network
+    :param bias: bias of this network
+    :param learning_rate: learning rate of this network
+    :param momentum_rate: momentum rate of this network
+    :param max_epoch: maximum epoch of this network
+    :param epsilon: minimum error of this network
+    :param file_path: path of file
+    :return: error list of validation data after training
+    """
     validate_error_list = []
     formatted_data = format_data(read_file(file_path))
     for i in range(10):
@@ -70,7 +83,14 @@ def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: f
     return error_list
 
 
-def read_file(file_path):
+def read_file(file_path: str) -> list[str]:
+    """
+    read file and return list of string each line
+    
+    :rtype: list[str]
+    :param file_path: path of file 
+    :return: list of string each line
+    """
     file = open(file_path, 'r')
     lines = file.readlines()
     return lines
@@ -389,6 +409,15 @@ def calculate_weight_change(node: list[list[list[float]]], grad: list[list[list[
 
 
 def update_weight(weight_change: list[list[list[float]]], weight: list[list[list[float]]], layers: list[int]) -> list[list[list[float]]]:
+    """
+    update weight of current network
+    
+    :rtype: list[list[list[float]]]
+    :param weight_change: weight change of current row of data  
+    :param weight: current weight of network
+    :param layers: layers of current network
+    :return: updated weight
+    """
     new_weight = create_weight(layers)
     for i in range(len(weight)):
         for j in range(len(weight[i])):
@@ -398,6 +427,11 @@ def update_weight(weight_change: list[list[list[float]]], weight: list[list[list
 
 
 def network_test_param():
+    """
+    test network with param
+    
+    side effect: print result of test
+    """
     print('--------------------------------------------')
     error = cross_validate([8, 4, 1], 1, 0.05, 0.01, 1000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
     print_error(error)
