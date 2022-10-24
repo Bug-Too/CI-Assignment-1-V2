@@ -1,10 +1,11 @@
+import math
 import random
 
 
 def cross_validate(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str) -> list[list[float]]:
     """
     cross validate data
-    
+
     :rtype: list[list[float]]
     :param layers: layers of this network
     :param bias: bias of this network
@@ -65,13 +66,14 @@ def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: f
         for current_data in training_data:
             node = forward_pass(weights, current_data[0], layers, bias)
             cost = calculate_cost(node, current_data[1])
+
             error_list.extend(cost)
             gradient = find_grad(node, weights, cost, layers)
             weight_change_list.append(calculate_weight_change(node, gradient, weight_change_list[-1], weights, learning_rate, momentum_rate, layers, epoch_count))
             weights = update_weight(weight_change_list[-1], weights, layers)
             weight_change_list.pop(0)
         sum_square_error_average = find_sse_average(error_list)
-        # print('Epoch:', epoch_count, 'SSE:', sum_square_error_average, error_list)
+        print('Epoch:', epoch_count, 'SSE:', sum_square_error_average, error_list)
         epoch_count += 1
 
     error_list = []
@@ -86,9 +88,9 @@ def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: f
 def read_file(file_path: str) -> list[str]:
     """
     read file and return list of string each line
-    
+
     :rtype: list[str]
-    :param file_path: path of file 
+    :param file_path: path of file
     :return: list of string each line
     """
     file = open(file_path, 'r')
@@ -107,19 +109,29 @@ def format_data(lines: list[str]) -> list[list[list[float]]]:
     """
     all_data = []
     for line in lines:
+        if not line[0].isnumeric():
+            continue
         raw_data = [float(y) for y in (line.split())]
         all_data.extend(raw_data)
     min_value = min(all_data)
     max_value = max(all_data)
 
     data_list: list[list[list[float]]] = []
+
+    is_input = True
+    data_pack = []
     for line in lines:
-        temp = []
+        if not line[0].isnumeric():
+            continue
+
         raw_data = [normalize_data(float(y), min_value, max_value) for y in (line.split())]
-        desire_output = [raw_data.pop()]
-        temp.append(raw_data)
-        temp.append(desire_output)
-        data_list.append(temp)
+        if is_input:
+            data_pack.append(raw_data)
+        else:
+            data_pack.append(raw_data)
+            data_list.append(data_pack)
+            data_pack = []
+        is_input = not is_input
     random.shuffle(data_list)
     return data_list
 
@@ -238,7 +250,15 @@ def calculate_cost(node: list[list[list[float]]], desire_output: list[float]) ->
     """
     cost_list = []
     for i in range(len(node[-1])):
-        cost_list.append(desire_output[i] - node[-1][i][0])
+        output = node[-1][i][0]
+        if output == 0:
+            output = 0.0000000000000001
+        if output == 1:
+            output = 0.9999999999999999
+        if desire_output[i] == 0:
+            cost_list.append(1/(1-output))
+        else:
+            cost_list.append(1/output)
     return cost_list
 
 
@@ -351,10 +371,7 @@ def activation_function(x: float) -> float:
     :param x: input value in float
     :return: value when calculate activation
     """
-    if x < 0:
-        return 0.01 * x
-    else:
-        return x
+    return 1/(1+math.exp(-x))
 
 
 def diff_activation_function(x: float) -> float:
@@ -365,10 +382,7 @@ def diff_activation_function(x: float) -> float:
     :param x: input value in float
     :return: value when calculate diff activation
     """
-    if x < 0:
-        return 0.01
-    else:
-        return 1
+    return activation_function(x) * (1 - activation_function(x))
 
 
 def transpose(input_matrix: list[list[float]]) -> list[list[float]]:
@@ -402,18 +416,18 @@ def calculate_weight_change(node: list[list[list[float]]], grad: list[list[list[
         for j in range(len(weight[i])):
             for k in range(len(weight[i][j])):
                 if epoch == 0:
-                    weight_change[i][j][k] = learning_rate * grad[i + 1][j][0] * node[i + 1][j][0]
+                    weight_change[i][j][k] = learning_rate * grad[i + 1][j][0] * node[i][k][0]
                 else:
-                    weight_change[i][j][k] = momentum_rate * last_weight_change[i][j][k] + learning_rate * grad[i + 1][j][0] * node[i + 1][j][0]
+                    weight_change[i][j][k] = momentum_rate * last_weight_change[i][j][k] + learning_rate * grad[i + 1][j][0] * node[i][k][0]
     return weight_change
 
 
 def update_weight(weight_change: list[list[list[float]]], weight: list[list[list[float]]], layers: list[int]) -> list[list[list[float]]]:
     """
     update weight of current network
-    
+
     :rtype: list[list[list[float]]]
-    :param weight_change: weight change of current row of data  
+    :param weight_change: weight change of current row of data
     :param weight: current weight of network
     :param layers: layers of current network
     :return: updated weight
@@ -429,27 +443,13 @@ def update_weight(weight_change: list[list[list[float]]], weight: list[list[list
 def network_test_param():
     """
     test network with param
-    
+
     side effect: print result of test
     """
     print('--------------------------------------------')
-    error = cross_validate([8, 4, 1], 1, 0.05, 0.01, 1000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
+    error = cross_validate([2, 4, 4, 1], 0, 0.1, 0.1, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
     print_error(error)
     print('--------------------------------------------')
-    error = cross_validate([8, 4, 1], 1, 0.1, 0.05, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
-    print_error(error)
-    print('--------------------------------------------')
-    error = cross_validate([8, 1, 2, 1], 1, 0.05, 0.01, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
-    print_error(error)
-    print('--------------------------------------------')
-    error = cross_validate([8, 4, 2, 1], 1, 0.1, 0.05, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
-    print_error(error)
-    print('--------------------------------------------')
-    error = cross_validate([8, 4, 1], 1, 0.2, 0.1, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
-    print_error(error)
-    print('--------------------------------------------')
-    error = cross_validate([8, 4, 1], 1, 0.5, 0.1, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
-    print_error(error)
 
 
 if __name__ == '__main__':
