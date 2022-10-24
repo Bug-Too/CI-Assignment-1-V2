@@ -14,12 +14,32 @@ def cross_validate(layers: list[int], bias: float, learning_rate: float, momentu
 
 
 def print_error(error_list: list[list[float]]):
-    for error in error_list:
-        sse = find_sse_average(error)
-        print('root mean square error: ', sse ** 0.5, 'error list: ', error)
+    """
+    print root-mean-square error and error list in each epoch
+    side effect: print error
+
+    param error_list: list of error in each epoch
+    """
+    for current_error in error_list:
+        sse = find_sse_average(current_error)
+        print('root mean square error: ', sse ** 0.5, 'error list: ', current_error)
 
 
-def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, training_data: list[list[list[float]]], validation_data) -> list[float]:
+def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, training_data: list[list[list[float]]], validation_data: list[list[list[float]]]) -> list[float]:
+    """
+    train neural network and validate it
+
+    :rtype: list[float]
+    :param layers: layers of this network
+    :param bias: bias of this network
+    :param learning_rate: learning rate of this network
+    :param momentum_rate: momentum rate of this network
+    :param max_epoch: maximum epoch of this network
+    :param epsilon: minimum error of this network
+    :param training_data: list of training data
+    :param validation_data: list of validation data
+    :return: list of error in each epoch
+    """
     # Initial value
     weights = create_weight(layers)
     sum_square_error_average = 1
@@ -85,6 +105,14 @@ def format_data(lines: list[str]) -> list[list[list[float]]]:
 
 
 def normalize_data(input_data: float, min_data: float, max_data: float):
+    """
+    normalize data to range 0 to 1
+
+    :param input_data: data to be normalized
+    :param min_data: minimum value of data
+    :param max_data: maximum value of data
+    :return: normalized data
+    """
     return (input_data - min_data) / (max_data - min_data)
 
 
@@ -128,18 +156,18 @@ def create_weight(layers: list[int]) -> list[list[list[float]]]:
     return weight
 
 
-def find_sse_average(error: list[float]) -> float:
+def find_sse_average(error_list: list[float]) -> float:
     """
     calculate sum square error average from list of errors
 
     :rtype: float
-    :param error: list of errors
+    :param error_list: list of errors
     :return: sse_average
     """
     sse_average = 0
-    for n in error:
+    for n in error_list:
         sse_average += n * n
-    sse_average = sse_average / len(error)
+    sse_average = sse_average / len(error_list)
     return sse_average
 
 
@@ -180,14 +208,21 @@ def forward_pass(weight: list, input_data: list[float], layers: list, bias: floa
 
 
 def calculate_cost(node: list[list[list[float]]], desire_output: list[float]) -> list[float]:
-    # find error
-    error = []
+    """
+    calculate cost of output layer
+
+    :rtype: list[float]
+    :param node: node of network
+    :param desire_output: desire output of current epoch
+    :return: cost of output layer
+    """
+    cost_list = []
     for i in range(len(node[-1])):
-        error.append(desire_output[i] - node[-1][i][0])
-    return error
+        cost_list.append(desire_output[i] - node[-1][i][0])
+    return cost_list
 
 
-def find_grad(node: list[list[list[float]]], weight: list[list[list[float]]], error: list[float], layers: list[int]) -> list[list[list[float]]]:
+def find_grad(node: list[list[list[float]]], weight: list[list[list[float]]], error_list: list[float], layers: list[int]) -> list[list[list[float]]]:
     """
     Calculate gradient in each node
     Output layer: error * diff_activation_function(multiply_matrix(node[-1],weight[-1]))
@@ -196,13 +231,13 @@ def find_grad(node: list[list[list[float]]], weight: list[list[list[float]]], er
     :param layers: layers of this network
     :param node: list of lists of nodes in each layer
     :param weight: lists of weight in each interval
-    :param error: error from forward_pass
+    :param error_list: error from forward_pass
     :return: list of lists of gradient in each layer
     """
     # Calculate gradient at output layer
     grad = create_node(layers)
-    for i in range(len(error)):
-        grad[-1][i] = [error[i] * diff_activation_function(multiply_matrix(node[-1], weight[-1])[-1][i])]
+    for i in range(len(error_list)):
+        grad[-1][i] = [error_list[i] * diff_activation_function(multiply_matrix(node[-1], weight[-1])[-1][i])]
 
     # Calculate gradient at hidden layer
     for i in reversed(range(len(layers) - 1)):
@@ -234,10 +269,25 @@ def matrix_operation(input_matrix: list[list[float]], method) -> list:
 
 
 def multiply_number(a: float, b: float) -> float:
+    """
+    multiply number a and b
+
+    :rtype: float
+    :param a: number a
+    :param b: number b
+    :return: a*b
+    """
     return a * b
 
 
 def add_number(a: float, b: float) -> float:
+    """
+    add number a and b
+
+    :param a: number a
+    :param b: number b
+    :return: a+b
+    """
     return a + b
 
 
@@ -347,7 +397,7 @@ def update_weight(weight_change: list[list[list[float]]], weight: list[list[list
     return new_weight
 
 
-if __name__ == '__main__':
+def network_test_param():
     print('--------------------------------------------')
     error = cross_validate([8, 4, 1], 1, 0.05, 0.01, 1000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
     print_error(error)
@@ -366,3 +416,7 @@ if __name__ == '__main__':
     print('--------------------------------------------')
     error = cross_validate([8, 4, 1], 1, 0.5, 0.1, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
     print_error(error)
+
+
+if __name__ == '__main__':
+    network_test_param()
