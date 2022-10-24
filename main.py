@@ -5,19 +5,18 @@ def cross_validate(layers: list[int], bias: float, learning_rate: float, momentu
     validate_error_list = []
     formatted_data = format_data(read_file(file_path))
     for i in range(10):
-        training_data = formatted_data
+        training_data = formatted_data.copy()
         validation_data = []
         for j in range(int(len(formatted_data) / 10)):
             validation_data.append(training_data.pop(i * int(len(formatted_data) / 10)))
         validate_error_list.append(train(layers, bias, learning_rate, momentum_rate, max_epoch, epsilon, training_data, validation_data))
-        print(i)
     return validate_error_list
 
 
 def print_error(error_list: list[list[float]]):
     for error in error_list:
         sse = find_sse_average(error)
-        print(error, 'root mean square error: ', sse)
+        print('root mean square error: ', sse ** 0.5, 'error list: ', error)
 
 
 def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, training_data: list[list[list[float]]], validation_data) -> list[float]:
@@ -39,7 +38,7 @@ def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: f
             weights = update_weight(weight_change_list[-1], weights, layers)
             weight_change_list.pop(0)
         sum_square_error_average = find_sse_average(error_list)
-        print('Epoch:', epoch_count, 'SSE:', sum_square_error_average , error_list)
+        # print('Epoch:', epoch_count, 'SSE:', sum_square_error_average, error_list)
         epoch_count += 1
 
     error_list = []
@@ -169,13 +168,13 @@ def forward_pass(weight: list, input_data: list[float], layers: list, bias: floa
     """
     # insert input
     node = create_node(layers)
-    node[0] = transpose([input_data])
+    node[0] = transpose([input_data.copy()])
 
     # calculate activation value
     for i in range(len(layers) - 1):
-        node[i+1] = multiply_matrix(weight[i], node[i])
-        node[i+1] = matrix_operation(node[i+1], activation_function)
-        node[i+1] = two_matrix_operation(node[i+1], create_bias_vector(bias, len(node[i+1])), add_number)
+        node[i + 1] = multiply_matrix(weight[i], node[i])
+        node[i + 1] = matrix_operation(node[i + 1], activation_function)
+        node[i + 1] = two_matrix_operation(node[i + 1], create_bias_vector(bias, len(node[i + 1])), add_number)
 
     return node
 
@@ -205,12 +204,15 @@ def find_grad(node: list[list[list[float]]], weight: list[list[list[float]]], er
     for i in range(len(error)):
         grad[-1][i] = [error[i] * diff_activation_function(multiply_matrix(node[-1], weight[-1])[-1][i])]
 
-    # Ex. [1,2,1] i = {0}, {1} and j = {0,1}, {0}
-    for i in range(len(layers) - 2):  # i = 0 -> N - 1(start at 0) - 2()
-        for j in range(layers[len(layers) - i - 2]):  # j = 0 -> layer[N - i] -1
-            current_layer_pos = len(layers) - 2 - i
-            # fixed there is no bias here !!!
-            grad[current_layer_pos] = two_matrix_operation(matrix_operation(multiply_matrix(weight[current_layer_pos - 1], node[current_layer_pos - 1]), diff_activation_function), multiply_matrix(weight[current_layer_pos], grad[current_layer_pos + 1]), multiply_number)
+    # Calculate gradient at hidden layer
+    for i in reversed(range(len(layers) - 1)):
+        if i == 0:
+            break
+        for j in range(layers[i]):
+            sum_weight_grad = 0
+            for k in range(layers[i + 1]):
+                sum_weight_grad += weight[i][k][j] * grad[i + 1][k][0]
+            grad[i][j][0] = sum_weight_grad * matrix_operation(multiply_matrix(weight[i - 1], node[i - 1]), diff_activation_function)[j][0]
     return grad
 
 
@@ -280,7 +282,7 @@ def activation_function(x: float) -> float:
     :return: value when calculate activation
     """
     if x < 0:
-        return 0.01
+        return 0.01 * x
     else:
         return x
 
@@ -330,9 +332,9 @@ def calculate_weight_change(node: list[list[list[float]]], grad: list[list[list[
         for j in range(len(weight[i])):
             for k in range(len(weight[i][j])):
                 if epoch == 0:
-                    weight_change[i][j][k] = learning_rate * grad[i+1][j][0] * node[i][k][0]
+                    weight_change[i][j][k] = learning_rate * grad[i + 1][j][0] * node[i + 1][j][0]
                 else:
-                    weight_change[i][j][k] = momentum_rate * last_weight_change[i][j][k] + learning_rate * grad[i+1][j][0] * node[i][j][0]
+                    weight_change[i][j][k] = momentum_rate * last_weight_change[i][j][k] + learning_rate * grad[i + 1][j][0] * node[i + 1][j][0]
     return weight_change
 
 
@@ -346,5 +348,21 @@ def update_weight(weight_change: list[list[list[float]]], weight: list[list[list
 
 
 if __name__ == '__main__':
-    error = cross_validate([8, 1, 1], 1, 0.1, 0.1, 1000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
+    print('--------------------------------------------')
+    error = cross_validate([8, 4, 1], 1, 0.05, 0.01, 1000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
+    print_error(error)
+    print('--------------------------------------------')
+    error = cross_validate([8, 4, 1], 1, 0.1, 0.05, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
+    print_error(error)
+    print('--------------------------------------------')
+    error = cross_validate([8, 1, 2, 1], 1, 0.05, 0.01, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
+    print_error(error)
+    print('--------------------------------------------')
+    error = cross_validate([8, 4, 2, 1], 1, 0.1, 0.05, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
+    print_error(error)
+    print('--------------------------------------------')
+    error = cross_validate([8, 4, 1], 1, 0.2, 0.1, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
+    print_error(error)
+    print('--------------------------------------------')
+    error = cross_validate([8, 4, 1], 1, 0.5, 0.1, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Flood_dataset.txt')
     print_error(error)
