@@ -2,11 +2,11 @@ import math
 import random
 
 
-def cross_validate(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str) -> list[list[float]]:
+def cross_validate(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, file_path: str) -> list[list[list[int]]]:
     """
     cross validate data
 
-    :rtype: list[list[float]]
+    :rtype: list[list[int]]
     :param layers: layers of this network
     :param bias: bias of this network
     :param learning_rate: learning rate of this network
@@ -39,7 +39,7 @@ def print_error(error_list: list[list[float]]):
         print('root mean square error: ', sse ** 0.5, 'error list: ', current_error)
 
 
-def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, training_data: list[list[list[float]]], validation_data: list[list[list[float]]]) -> list[float]:
+def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: float, max_epoch: int, epsilon: float, training_data: list[list[list[float]]], validation_data: list[list[list[float]]]) -> list[list[int]]:
     """
     train neural network and validate it
 
@@ -63,26 +63,26 @@ def train(layers: list[int], bias: float, learning_rate: float, momentum_rate: f
     # Run Training Algorithm
     while sum_square_error_average > epsilon and epoch_count < max_epoch:
         error_list = []
+        matrix_confusion = [[0, 0], [0, 0]]
         for current_data in training_data:
             node = forward_pass(weights, current_data[0], layers, bias)
             cost = calculate_cost(node, current_data[1])
-
+            matrix_confusion = calculate_matrix_confusion(node, current_data[1], matrix_confusion.copy())
             error_list.extend(cost)
             gradient = find_grad(node, weights, cost, layers)
             weight_change_list.append(calculate_weight_change(node, gradient, weight_change_list[-1], weights, learning_rate, momentum_rate, layers, epoch_count))
             weights = update_weight(weight_change_list[-1], weights, layers)
             weight_change_list.pop(0)
         sum_square_error_average = find_sse_average(error_list)
-        print('Epoch:', epoch_count, 'SSE:', sum_square_error_average, error_list)
+        # print('Epoch:', epoch_count, 'matrix_confusion', matrix_confusion, 'sum_square_error_average', sum_square_error_average)
         epoch_count += 1
 
-    error_list = []
+    matrix_confusion = [[0, 0], [0, 0]]
     for current_validate in validation_data:
         node = forward_pass(weights, current_validate[0], layers, bias)
-        cost = calculate_cost(node, current_validate[1])
-        error_list.extend(cost)
+        matrix_confusion = calculate_matrix_confusion(node, current_validate[1], matrix_confusion.copy())
 
-    return error_list
+    return matrix_confusion
 
 
 def read_file(file_path: str) -> list[str]:
@@ -128,7 +128,7 @@ def format_data(lines: list[str]) -> list[list[list[float]]]:
         if is_input:
             data_pack.append(raw_data)
         else:
-            data_pack.append(raw_data)
+            data_pack.append([raw_data.pop(0)])
             data_list.append(data_pack)
             data_pack = []
         is_input = not is_input
@@ -250,16 +250,35 @@ def calculate_cost(node: list[list[list[float]]], desire_output: list[float]) ->
     """
     cost_list = []
     for i in range(len(node[-1])):
-        output = node[-1][i][0]
-        if output == 0:
-            output = 0.0000000000000001
-        if output == 1:
-            output = 0.9999999999999999
-        if desire_output[i] == 0:
-            cost_list.append(1/(1-output))
-        else:
-            cost_list.append(1/output)
+        cost_list.append(desire_output[i] - node[-1][i][0])
     return cost_list
+
+
+def calculate_matrix_confusion(node: list[list[list[float]]], desire_output: list[float], matrix_confusion: list[list[int]]) -> list[list[int]]:
+    """
+    calculate matrix confusion
+
+    :param matrix_confusion: matrix confusion
+    :rtype: list[list[float]]
+    :param node: node of network
+    :param desire_output: desire output of current epoch
+    :return: matrix confusion
+    """
+    for i in range(len(node[-1])):
+        output = node[-1][i][0]
+        if output >= 0.5:
+            output = 1
+        else:
+            output = 0
+        if output == 0 and desire_output[i] == 0:
+            matrix_confusion[0][0] += 1
+        elif output == 0 and desire_output[i] == 1:
+            matrix_confusion[0][1] += 1
+        elif output == 1 and desire_output[i] == 0:
+            matrix_confusion[1][0] += 1
+        elif output == 1 and desire_output[i] == 1:
+            matrix_confusion[1][1] += 1
+    return matrix_confusion
 
 
 def find_grad(node: list[list[list[float]]], weight: list[list[list[float]]], error_list: list[float], layers: list[int]) -> list[list[list[float]]]:
@@ -371,7 +390,7 @@ def activation_function(x: float) -> float:
     :param x: input value in float
     :return: value when calculate activation
     """
-    return 1/(1+math.exp(-x))
+    return 1 / (1 + math.exp(-x))
 
 
 def diff_activation_function(x: float) -> float:
@@ -447,9 +466,21 @@ def network_test_param():
     side effect: print result of test
     """
     print('--------------------------------------------')
-    error = cross_validate([2, 4, 4, 1], 0, 0.1, 0.1, 2000, 0.005, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
-    print_error(error)
+    print('layer: 2, 6, 6, 1 | learning rate: 0.3 | momentum rate: 0.1 | epoch: 2000')
+    error = cross_validate([2, 6, 6, 1], 0, 0.3, 0.1, 2000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
+    print('matrix_confusion', error)
     print('--------------------------------------------')
+    print('layer: 2, 6, 1 | learning rate: 0.1 | momentum rate: 0.1 | epoch: 2000')
+    error = cross_validate([2, 6, 1], 0, 0.1, 0.1, 2000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
+    print('matrix_confusion', error)
+    print('--------------------------------------------')
+    print('layer: 2, 6, 6, 1 | learning rate: 0.05 | momentum rate: 0.05 | epoch: 3000')
+    error = cross_validate([2, 6, 6, 1], 0, 0.05, 0.05, 3000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
+    print('matrix_confusion', error)
+    print('--------------------------------------------')
+    print('layer: 2, 6, 6, 1 | learning rate: 0.3 | momentum rate: 0.1 | epoch: 2000')
+    error = cross_validate([2, 6, 6, 1], 0, 0.3, 0.1, 2000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
+    print('matrix_confusion', error)
 
 
 if __name__ == '__main__':
