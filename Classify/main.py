@@ -301,6 +301,7 @@ def find_grad(node: list[list[list[float]]], weight: list[list[list[float]]], er
     """
     Calculate gradient in each node
 
+    :rtype: list[list[list[float]]]
     :param layers: layers of this network
     :param node: list of lists of nodes in each layer
     :param weight: lists of weight in each interval
