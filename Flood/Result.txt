@@ -1,0 +1,66 @@
+--------------------------------------------
+root mean square error:  0.04352017742290921
+root mean square error:  0.03040681674228718
+root mean square error:  0.02888045306883786
+root mean square error:  0.02537090562836793
+root mean square error:  0.03611319406633163
+root mean square error:  0.0393573526609875
+root mean square error:  0.02933373431914179
+root mean square error:  0.03681031191496156
+root mean square error:  0.025298415812398497
+root mean square error:  0.03325441061276363
+--------------------------------------------
+root mean square error:  0.15253678136815216
+root mean square error:  0.15229094672933488
+root mean square error:  0.12912998648351978
+root mean square error:  0.15241552579582676
+root mean square error:  0.17108309772988725
+root mean square error:  0.14818396633904776
+root mean square error:  0.16173105907907337
+root mean square error:  0.17022254450910276
+root mean square error:  0.15408043395164137
+root mean square error:  0.16326756648104315
+--------------------------------------------
+root mean square error:  0.17161438096018766
+root mean square error:  0.15987839102369064
+root mean square error:  0.1439153476387551
+root mean square error:  0.13377158669562442
+root mean square error:  0.1512158603706783
+root mean square error:  0.1552710920321695
+root mean square error:  0.15267960896651186
+root mean square error:  0.1638069066918619
+root mean square error:  0.14442446389229133
+root mean square error:  0.16010784683867826
+--------------------------------------------
+root mean square error:  0.04409868982251237
+root mean square error:  0.02938212148150585
+root mean square error:  0.14004692689867962
+root mean square error:  0.0270593055713704
+root mean square error:  0.03687729016605385
+root mean square error:  0.035749974782563726
+root mean square error:  0.040530878019304085
+root mean square error:  0.1401064258564403
+root mean square error:  0.019658882116376813
+root mean square error:  0.029777151220563017
+--------------------------------------------
+root mean square error:  0.14286315183215006
+root mean square error:  0.148628593563479
+root mean square error:  0.14208850156659183
+root mean square error:  0.13595812448721872
+root mean square error:  0.14484535329017015
+root mean square error:  0.11472064014074859
+root mean square error:  0.11116136845705911
+root mean square error:  0.1320177306099044
+root mean square error:  0.13509106858301162
+root mean square error:  0.13613708408101724
+--------------------------------------------
+root mean square error:  0.07234405264523167
+root mean square error:  0.06069599364396815
+root mean square error:  0.053044310663048405
+root mean square error:  0.04893190808501103
+root mean square error:  0.051220978442446136
+root mean square error:  0.06377154118582426
+root mean square error:  0.05838028014859672
+root mean square error:  0.07285579584848632
+root mean square error:  0.058001076763005706
+root mean square error:  0.047637120696817546
