@@ -245,8 +245,6 @@ def calculate_cost(node: list[list[list[float]]], desire_output: list[float]) ->
 def find_grad(node: list[list[list[float]]], weight: list[list[list[float]]], error_list: list[float], layers: list[int]) -> list[list[list[float]]]:
     """
     Calculate gradient in each node
-    Output layer: error * diff_activation_function(multiply_matrix(node[-1],weight[-1]))
-    hidden layer at i layer: diff_activation_function(multiply_matrix(node[len(node)-i-1],weight[len(weight)-i-1])) * multiply_matrix(grad[len(grad)-i],weight[len(weight)-i])
 
     :param layers: layers of this network
     :param node: list of lists of nodes in each layer
