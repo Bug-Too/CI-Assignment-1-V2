@@ -27,6 +27,22 @@ def cross_validate(layers: list[int], bias: float, learning_rate: float, momentu
     return validate_error_list
 
 
+def merge_confusion_matrix(confusion_matrix_list: list[list[list[int]]]) -> list[list[int]]:
+    """
+    merge confusion matrix list to one confusion matrix
+
+    :rtype: list[list[int]]
+    :param confusion_matrix_list: list of confusion matrix
+    :return: merged confusion matrix
+    """
+    merged_confusion_matrix = [[0, 0], [0, 0]]
+    for i in range(len(confusion_matrix_list)):
+        for j in range(len(confusion_matrix_list[i])):
+            for k in range(len(confusion_matrix_list[i][j])):
+                merged_confusion_matrix[j][k] += confusion_matrix_list[i][j][k]
+    return merged_confusion_matrix
+
+
 def print_error(error_list: list[list[float]]):
     """
     print root-mean-square error and error list in each epoch
@@ -468,19 +484,19 @@ def network_test_param():
     print('--------------------------------------------')
     print('layer: 2, 6, 6, 1 | learning rate: 0.3 | momentum rate: 0.1 | epoch: 2000')
     error = cross_validate([2, 6, 6, 1], 0, 0.3, 0.1, 2000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
-    print('matrix_confusion', error)
+    print('total confusion matrix', merge_confusion_matrix(error), 'each confusion matrix : ', error)
     print('--------------------------------------------')
     print('layer: 2, 6, 1 | learning rate: 0.1 | momentum rate: 0.1 | epoch: 2000')
     error = cross_validate([2, 6, 1], 0, 0.1, 0.1, 2000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
-    print('matrix_confusion', error)
+    print('total confusion matrix', merge_confusion_matrix(error), 'each confusion matrix : ', error)
     print('--------------------------------------------')
     print('layer: 2, 6, 6, 1 | learning rate: 0.05 | momentum rate: 0.05 | epoch: 3000')
     error = cross_validate([2, 6, 6, 1], 0, 0.05, 0.05, 3000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
-    print('matrix_confusion', error)
+    print('total confusion matrix', merge_confusion_matrix(error), 'each confusion matrix : ', error)
     print('--------------------------------------------')
     print('layer: 2, 6, 6, 1 | learning rate: 0.3 | momentum rate: 0.1 | epoch: 2000')
     error = cross_validate([2, 6, 6, 1], 0, 0.3, 0.1, 2000, 0.05, '/home/pooh/Documents/CI/HW1/CI-Assignment-1-V2/Classify/cross.pat')
-    print('matrix_confusion', error)
+    print('total confusion matrix', merge_confusion_matrix(error), 'each confusion matrix : ', error)
 
 
 if __name__ == '__main__':
